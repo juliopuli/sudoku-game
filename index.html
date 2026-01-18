@@ -90,7 +90,6 @@
             overflow: hidden;
             background-color: var(--border-color);
             padding: 3px;
-            /* Aseguramos que el contenedor tenga tamaño aunque falle el script */
             min-width: 300px;
             min-height: 300px;
             display: flex;
@@ -107,7 +106,6 @@
             height: 92vw;
             max-width: 450px;
             max-height: 450px;
-            /* Texto de carga */
             color: #999;
             font-size: 14px;
         }
@@ -124,7 +122,6 @@
             -webkit-appearance: none;
         }
 
-        /* Clases visuales */
         .b-right-thick { border-right: 3px solid var(--border-color) !important; }
         .b-bottom-thick { border-bottom: 3px solid var(--border-color) !important; }
         .no-right-border { border-right: none !important; }
@@ -158,15 +155,13 @@
     </div>
 
     <div id="sudoku-container">
-        <div id="sudoku-board">Cargando tablero...</div>
+        <div id="sudoku-board">Iniciando...</div>
     </div>
     
     <div id="message"></div>
 
     <script>
-        // -- AQUÍ EMPIEZA LA LÓGICA DEL JUEGO --
-        // Es vital copiar todo esto hasta el final para que aparezca el tablero.
-
+        // --- COPIA DESDE AQUÍ HASTA EL FINAL ---
         const boardElement = document.getElementById('sudoku-board');
         const messageElement = document.getElementById('message');
         const difficultySelect = document.getElementById('difficulty');
@@ -178,8 +173,8 @@
             event.preventDefault();
         }, { passive: false });
 
-        // Iniciamos el juego cuando la página esté lista
-        document.addEventListener("DOMContentLoaded", newGame);
+        // Carga inicial
+        window.onload = newGame;
 
         function newGame() {
             messageElement.innerText = '';
@@ -191,7 +186,10 @@
         }
 
         function renderBoard(board) {
-            boardElement.innerHTML = ''; // Limpiamos el mensaje de "Cargando..."
+            boardElement.innerHTML = ''; // Borra el texto de "Iniciando..."
+            // Ajustamos estilos para que sea rejilla
+            boardElement.style.display = 'grid'; 
+
             for (let i = 0; i < 9; i++) {
                 for (let j = 0; j < 9; j++) {
                     const input = document.createElement('input');
@@ -216,3 +214,159 @@
                         input.addEventListener('input', (e) => {
                             if (e.target.value.length > 1) e.target.value = e.target.value.slice(-1);
                             const numVal = parseInt(e.target.value);
+                            if (isNaN(numVal) || numVal < 1 || numVal > 9) e.target.value = '';
+                            e.target.classList.remove('wrong');
+                            handleCellFocus(e);
+                        });
+                    }
+                    
+                    input.addEventListener('focus', handleCellFocus);
+                    input.addEventListener('touchstart', (e) => { e.stopPropagation(); }, {passive: true});
+
+                    boardElement.appendChild(input);
+                }
+            }
+        }
+
+        function handleCellFocus(e) {
+            clearHighlights();
+            const val = e.target.value;
+            if (val) highlightSameNumbers(val);
+        }
+
+        function highlightSameNumbers(valueToMatch) {
+            const allInputs = document.querySelectorAll('input');
+            let count = 0;
+            allInputs.forEach(input => { if (input.value === valueToMatch) count++; });
+            const className = (count >= 9) ? 'completed-number' : 'same-number';
+            allInputs.forEach(input => {
+                if (input.value === valueToMatch && input.value !== '') {
+                    input.classList.add(className);
+                }
+            });
+        }
+
+        function clearHighlights() {
+            const allInputs = document.querySelectorAll('input');
+            allInputs.forEach(input => {
+                input.classList.remove('same-number');
+                input.classList.remove('completed-number');
+            });
+        }
+
+        document.addEventListener('touchstart', function(e) {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'BUTTON') {
+                if(document.activeElement) document.activeElement.blur();
+                clearHighlights();
+            }
+        });
+
+        function checkSolution() {
+            clearHighlights();
+            const inputs = document.querySelectorAll('input');
+            let isCorrect = true;
+            let isComplete = true;
+
+            inputs.forEach(input => {
+                const row = input.dataset.row;
+                const col = input.dataset.col;
+                const val = parseInt(input.value);
+                input.classList.remove('wrong');
+
+                if (!val) { isComplete = false; return; }
+                if (val !== solution[row][col]) {
+                    input.classList.add('wrong');
+                    isCorrect = false;
+                }
+            });
+
+            if (isCorrect && isComplete) {
+                messageElement.style.color = 'var(--success-color)';
+                messageElement.innerText = '¡Felicidades!';
+            } else if (!isComplete) {
+                messageElement.style.color = '#e67e22';
+                messageElement.innerText = 'Faltan números.';
+            } else {
+                messageElement.style.color = 'var(--error-color)';
+                messageElement.innerText = 'Hay errores.';
+            }
+        }
+
+        function solveGame() {
+            clearHighlights();
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                const row = input.dataset.row;
+                const col = input.dataset.col;
+                input.value = solution[row][col];
+                input.classList.remove('wrong');
+            });
+        }
+
+        function generateBaseBoard() {
+            let board = Array.from({ length: 9 }, () => Array(9).fill(0));
+            fillBox(board, 0, 0); fillBox(board, 3, 3); fillBox(board, 6, 6);
+            solve(board);
+            return board;
+        }
+
+        function fillBox(board, row, col) {
+            let num;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    do { num = Math.floor(Math.random() * 9) + 1; } while (!isSafeInBox(board, row, col, num));
+                    board[row + i][col + j] = num;
+                }
+            }
+        }
+
+        function isSafeInBox(board, rowStart, colStart, num) {
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board[rowStart + i][colStart + j] === num) return false;
+                }
+            }
+            return true;
+        }
+
+        function isSafe(board, row, col, num) {
+            for (let x = 0; x < 9; x++) { if (board[row][x] === num || board[x][col] === num) return false; }
+            const startRow = row - row % 3;
+            const startCol = col - col % 3;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) { if (board[startRow + i][startCol + j] === num) return false; }
+            }
+            return true;
+        }
+
+        function solve(board) {
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    if (board[i][j] === 0) {
+                        for (let num = 1; num <= 9; num++) {
+                            if (isSafe(board, i, j, num)) {
+                                board[i][j] = num;
+                                if (solve(board)) return true;
+                                board[i][j] = 0;
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function removeNumbers(board, amount) {
+            let newBoard = JSON.parse(JSON.stringify(board));
+            let attempts = amount;
+            while (attempts > 0) {
+                let row = Math.floor(Math.random() * 9);
+                let col = Math.floor(Math.random() * 9);
+                if (newBoard[row][col] !== 0) { newBoard[row][col] = 0; attempts--; }
+            }
+            return newBoard;
+        }
+    </script>
+</body>
+</html>
