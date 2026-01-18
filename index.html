@@ -25,13 +25,12 @@
             --cell-bg: #ffffff;
             --fixed-bg: #eaeff1;
             
-            --highlight-focus: #e8f6fd;
-            --highlight-same: #fff9c4;
-            --highlight-completed: #c8e6c9;
+            --highlight-focus: #e8f6fd;   /* Azul claro (solo para celdas vacías) */
+            --highlight-same: #fff9c4;    /* Crema (para números iguales) */
+            --highlight-completed: #c8e6c9; /* Verde (completado) */
             
             --text-color: #2c3e50;
             --btn-color: #3498db;
-            --btn-text: #ffffff;
             --error-color: #e74c3c;
             --success-color: #2ecc71;
             --info-color: #f39c12;
@@ -44,7 +43,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* Centrado vertical */
+            justify-content: center;
             min-height: 100dvh; 
             width: 100vw;
             margin: 0;
@@ -56,20 +55,19 @@
         }
 
         h1 {
-            margin: 0 0 15px 0; /* Menos margen para subir el tablero */
+            margin: 0 0 15px 0;
             font-size: 36px;
             font-weight: 800;
             letter-spacing: -1px;
             color: var(--text-color);
         }
 
-        /* CONTENEDOR DEL TABLERO */
         #sudoku-container {
             background-color: var(--board-border);
             padding: 4px; 
             border-radius: 8px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            margin-bottom: 5px; /* Espacio para la firma */
+            margin-bottom: 5px;
         }
 
         #sudoku-board {
@@ -103,37 +101,50 @@
             border-bottom: 2px solid var(--grid-line-thick);
         }
 
-        /* Estados */
+        /* --- ESTADOS Y COLORES (LÓGICA CORREGIDA) --- */
+        
         .fixed { background-color: var(--fixed-bg) !important; font-weight: 700; color: #2c3e50; }
+
+        /* 1. Foco base (solo se ve si la celda está vacía) */
         input:focus { background-color: var(--highlight-focus) !important; }
-        .same-number { background-color: var(--highlight-same) !important; }
-        .completed-number { background-color: var(--highlight-completed) !important; }
+        
+        /* 2. Mismo número (Crema) - Se aplica a la celda Y a su foco */
+        .same-number, 
+        input.same-number:focus { 
+            background-color: var(--highlight-same) !important; 
+        }
+        
+        /* 3. Completado (Verde) - Se aplica a la celda Y a su foco */
+        .completed-number, 
+        input.completed-number:focus { 
+            background-color: var(--highlight-completed) !important; 
+        }
+        
         .wrong { background-color: #fadbd8 !important; color: var(--error-color); }
 
-        /* FIRMA */
+        /* Firma */
         .signature {
             width: 90vw;
             max-width: 400px;
             text-align: right;
             font-size: 11px;
             color: #95a5a6;
-            margin-bottom: 20px; /* Separación con los botones */
+            margin-bottom: 20px;
             font-weight: 500;
         }
 
-        /* CONTROLES (Ahora debajo) */
+        /* Controles */
         .controls {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* 2 columnas iguales */
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
             width: 100%;
             max-width: 400px;
             margin-bottom: 10px;
         }
 
-        /* Estilo unificado para botones y select */
         select, button {
-            height: 50px; /* Botones más altos y cómodos */
+            height: 50px;
             border-radius: 14px;
             border: none;
             font-size: 16px;
@@ -145,44 +156,22 @@
             transition: transform 0.1s, opacity 0.2s;
         }
 
-        /* Selector de dificultad */
         select {
             padding: 0 15px;
             background-color: white;
             color: var(--text-color);
             -webkit-appearance: none;
-            text-align-last: center; /* Centra el texto en iOS */
+            text-align-last: center;
         }
 
-        /* Botón Nuevo Juego */
-        .btn-new {
-            background-color: var(--btn-color);
-            color: white;
-        }
-
-        /* Botón Verificar */
-        .btn-check {
-            background-color: white;
-            color: var(--btn-color);
-            border: 2px solid var(--btn-color); /* Borde de color para diferenciar */
-            box-shadow: none;
-        }
-
-        /* Botón Resolver */
-        .btn-solve {
-            background-color: #e0e0e0;
-            color: #7f8c8d;
-        }
-
+        .btn-new { background-color: var(--btn-color); color: white; }
+        .btn-check { background-color: white; color: var(--btn-color); border: 2px solid var(--btn-color); box-shadow: none; }
+        .btn-solve { background-color: #e0e0e0; color: #7f8c8d; }
         button:active { transform: scale(0.96); opacity: 0.9; }
 
         #message {
-            height: 25px; 
-            font-size: 16px;
-            font-weight: 600; 
-            text-align: center; 
-            color: #7f8c8d;
-            margin-top: 5px;
+            height: 25px; font-size: 16px; font-weight: 600; 
+            text-align: center; color: #7f8c8d; margin-top: 5px;
         }
     </style>
 </head>
@@ -374,6 +363,17 @@
             return true;
         }
 
+        function isSafe(board, row, col, num) {
+            for (let x = 9; x < 9; x++) { if (board[row][x] === num || board[x][col] === num) return false; }
+            const startRow = row - row % 3;
+            const startCol = col - col % 3;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) { if (board[startRow + i][startCol + j] === num) return false; }
+            }
+            return true;
+        }
+
+        // CORRECCIÓN MENOR EN IsSafe para asegurar tablero perfecto (se escapó un 9 en la línea anterior)
         function isSafe(board, row, col, num) {
             for (let x = 0; x < 9; x++) { if (board[row][x] === num || board[x][col] === num) return false; }
             const startRow = row - row % 3;
