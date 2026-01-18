@@ -25,9 +25,9 @@
             --cell-bg: #ffffff;
             --fixed-bg: #eaeff1;
             
-            --highlight-focus: #e8f6fd;   /* Azul claro (solo para celdas vacías) */
-            --highlight-same: #fff9c4;    /* Crema (para números iguales) */
-            --highlight-completed: #c8e6c9; /* Verde (completado) */
+            --highlight-focus: #e8f6fd;
+            --highlight-same: #fff9c4;
+            --highlight-completed: #c8e6c9;
             
             --text-color: #2c3e50;
             --btn-color: #3498db;
@@ -101,67 +101,35 @@
             border-bottom: 2px solid var(--grid-line-thick);
         }
 
-        /* --- ESTADOS Y COLORES (LÓGICA CORREGIDA) --- */
-        
+        /* Estados */
         .fixed { background-color: var(--fixed-bg) !important; font-weight: 700; color: #2c3e50; }
-
-        /* 1. Foco base (solo se ve si la celda está vacía) */
+        
         input:focus { background-color: var(--highlight-focus) !important; }
-        
-        /* 2. Mismo número (Crema) - Se aplica a la celda Y a su foco */
-        .same-number, 
-        input.same-number:focus { 
-            background-color: var(--highlight-same) !important; 
-        }
-        
-        /* 3. Completado (Verde) - Se aplica a la celda Y a su foco */
-        .completed-number, 
-        input.completed-number:focus { 
-            background-color: var(--highlight-completed) !important; 
-        }
-        
+        .same-number, input.same-number:focus { background-color: var(--highlight-same) !important; }
+        .completed-number, input.completed-number:focus { background-color: var(--highlight-completed) !important; }
         .wrong { background-color: #fadbd8 !important; color: var(--error-color); }
 
-        /* Firma */
         .signature {
-            width: 90vw;
-            max-width: 400px;
-            text-align: right;
-            font-size: 11px;
-            color: #95a5a6;
-            margin-bottom: 20px;
-            font-weight: 500;
+            width: 90vw; max-width: 400px; text-align: right;
+            font-size: 11px; color: #95a5a6; margin-bottom: 20px; font-weight: 500;
         }
 
-        /* Controles */
         .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 10px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+            width: 100%; max-width: 400px; margin-bottom: 10px;
         }
 
         select, button {
-            height: 50px;
-            border-radius: 14px;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height: 50px; border-radius: 14px; border: none;
+            font-size: 16px; font-weight: 600; display: flex;
+            align-items: center; justify-content: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             transition: transform 0.1s, opacity 0.2s;
         }
 
         select {
-            padding: 0 15px;
-            background-color: white;
-            color: var(--text-color);
-            -webkit-appearance: none;
-            text-align-last: center;
+            padding: 0 15px; background-color: white; color: var(--text-color);
+            -webkit-appearance: none; text-align-last: center;
         }
 
         .btn-new { background-color: var(--btn-color); color: white; }
@@ -241,13 +209,33 @@
                             const numVal = parseInt(e.target.value);
                             if (isNaN(numVal) || numVal < 1 || numVal > 9) e.target.value = '';
                             e.target.classList.remove('wrong');
+                            
                             handleCellFocus(e);
+                            
+                            // --- AUTO VERIFICACIÓN SI ESTÁ LLENO ---
+                            checkIfFullAndValidate();
                         });
                     }
                     input.addEventListener('focus', handleCellFocus);
                     input.addEventListener('touchstart', (e) => { e.stopPropagation(); }, {passive: true});
                     boardElement.appendChild(input);
                 }
+            }
+        }
+
+        // NUEVA FUNCIÓN: Comprueba si el tablero está lleno
+        function checkIfFullAndValidate() {
+            const allInputs = document.querySelectorAll('input');
+            let isFull = true;
+            for (const input of allInputs) {
+                if (input.value === '') {
+                    isFull = false;
+                    break;
+                }
+            }
+            // Si está lleno, lanzamos la verificación automáticamente
+            if (isFull) {
+                checkSolution();
             }
         }
 
@@ -295,6 +283,7 @@
                 const row = input.dataset.row;
                 const col = input.dataset.col;
                 const val = parseInt(input.value);
+
                 input.classList.remove('wrong');
 
                 if (val) {
@@ -363,17 +352,6 @@
             return true;
         }
 
-        function isSafe(board, row, col, num) {
-            for (let x = 9; x < 9; x++) { if (board[row][x] === num || board[x][col] === num) return false; }
-            const startRow = row - row % 3;
-            const startCol = col - col % 3;
-            for (let i = 0; i < 3; i++) {
-                for (let j = 0; j < 3; j++) { if (board[startRow + i][startCol + j] === num) return false; }
-            }
-            return true;
-        }
-
-        // CORRECCIÓN MENOR EN IsSafe para asegurar tablero perfecto (se escapó un 9 en la línea anterior)
         function isSafe(board, row, col, num) {
             for (let x = 0; x < 9; x++) { if (board[row][x] === num || board[x][col] === num) return false; }
             const startRow = row - row % 3;
