@@ -2,13 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
-    
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
     <meta name="apple-mobile-web-app-title" content="Sudoku">
     
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2696/2696509.png">
@@ -23,7 +19,7 @@
             --grid-line: #bdc3c7;    
             --highlight-focus: #e8f6fd;
             --highlight-same: #fff59d;
-            --highlight-completed: #aed581; /* Verde éxito */
+            --highlight-completed: #aed581;
             --text-color: #2c3e50;
             --btn-color: #3498db;
             --btn-hover: #2980b9;
@@ -32,7 +28,6 @@
             --fixed-bg: #ecf0f1;
         }
 
-        /* 2. ESTILOS PARA QUE PAREZCA NATIVA */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
@@ -43,25 +38,14 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            
-            /* Evita el rebote elástico (scroll bounce) típico de Safari */
             overscroll-behavior: none;
-            
-            /* Evita que se seleccione texto al tocar mucho la pantalla */
             -webkit-user-select: none;
             user-select: none;
-            
-            /* Ajuste para el "Notch" o isla dinámica del iPhone */
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
         }
 
-        h1 { 
-            margin-bottom: 15px; 
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
+        h1 { margin-bottom: 15px; font-size: 28px; font-weight: 700; }
 
         .controls {
             margin-bottom: 20px;
@@ -73,7 +57,6 @@
             max-width: 450px;
         }
 
-        /* Estilo iOS para el selector */
         select {
             padding: 10px;
             font-size: 16px;
@@ -81,7 +64,7 @@
             border: 1px solid #bdc3c7;
             background-color: white;
             color: var(--text-color);
-            -webkit-appearance: none; /* Quitar estilo por defecto */
+            -webkit-appearance: none;
             text-align: center;
             font-weight: 600;
         }
@@ -96,20 +79,23 @@
             color: white;
             font-weight: 600;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.1s;
-            /* Evita el menú contextual al dejar pulsado */
             -webkit-touch-callout: none; 
         }
 
-        button:active { transform: scale(0.96); opacity: 0.9; }
         button.secondary { background-color: #95a5a6; }
 
         #sudoku-container {
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             border-radius: 8px;
-            overflow: hidden; /* Redondea las esquinas del borde exterior */
+            overflow: hidden;
             background-color: var(--border-color);
-            padding: 3px; /* Simula el borde grueso externo */
+            padding: 3px;
+            /* Aseguramos que el contenedor tenga tamaño aunque falle el script */
+            min-width: 300px;
+            min-height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #sudoku-board {
@@ -117,69 +103,42 @@
             grid-template-columns: repeat(9, 1fr);
             grid-template-rows: repeat(9, 1fr);
             background-color: var(--board-bg);
-            /* Tamaño adaptable al ancho del móvil */
             width: 92vw; 
             height: 92vw;
             max-width: 450px;
             max-height: 450px;
+            /* Texto de carga */
+            color: #999;
+            font-size: 14px;
         }
 
         input {
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            /* 20px o más evita que iOS haga zoom automático al escribir */
-            font-size: 22px; 
-            outline: none;
-            color: var(--text-color);
-            background: transparent;
-            padding: 0;
-            margin: 0;
-            font-weight: 500;
+            width: 100%; height: 100%; text-align: center;
+            font-size: 22px; outline: none;
+            color: var(--text-color); background: transparent;
+            padding: 0; margin: 0; font-weight: 500;
             border: none;
             border-right: 1px solid var(--grid-line);
             border-bottom: 1px solid var(--grid-line);
             border-radius: 0;
-            -webkit-appearance: none; /* Quita sombras internas en iOS */
+            -webkit-appearance: none;
         }
 
-        /* --- BORDES GRUESOS NEGROS (CLASES) --- */
+        /* Clases visuales */
         .b-right-thick { border-right: 3px solid var(--border-color) !important; }
         .b-bottom-thick { border-bottom: 3px solid var(--border-color) !important; }
         .no-right-border { border-right: none !important; }
         .no-bottom-border { border-bottom: none !important; }
 
-        /* --- ESTADOS --- */
         input:focus { background-color: var(--highlight-focus); }
-        
-        .fixed { 
-            background-color: var(--fixed-bg); 
-            font-weight: 700; 
-            color: #2c3e50; 
-        }
-        
-        /* Números iguales (Amarillo) */
+        .fixed { background-color: var(--fixed-bg); font-weight: 700; color: #2c3e50; }
         .same-number { background-color: var(--highlight-same) !important; }
-        
-        /* Números completados 9 veces (Verde) */
         .completed-number { background-color: var(--highlight-completed) !important; }
-        
-        /* Error */
         .wrong { background-color: #fadbd8 !important; color: var(--error-color); }
 
         #message {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            height: 25px;
-            text-align: center;
-        }
-
-        /* Ajustes para pantallas pequeñas (iPhone SE, etc) */
-        @media (max-width: 380px) {
-            h1 { font-size: 24px; margin-bottom: 10px; }
-            button { padding: 8px 12px; font-size: 14px; }
-            input { font-size: 18px; }
+            margin-top: 20px; font-size: 18px; font-weight: bold;
+            height: 25px; text-align: center;
         }
     </style>
 </head>
@@ -198,4 +157,62 @@
         <button class="secondary" onclick="solveGame()">Resolver</button>
     </div>
 
-    <div id="sud
+    <div id="sudoku-container">
+        <div id="sudoku-board">Cargando tablero...</div>
+    </div>
+    
+    <div id="message"></div>
+
+    <script>
+        // -- AQUÍ EMPIEZA LA LÓGICA DEL JUEGO --
+        // Es vital copiar todo esto hasta el final para que aparezca el tablero.
+
+        const boardElement = document.getElementById('sudoku-board');
+        const messageElement = document.getElementById('message');
+        const difficultySelect = document.getElementById('difficulty');
+        
+        let solution = [];
+        let puzzle = [];
+
+        document.addEventListener('dblclick', function(event) {
+            event.preventDefault();
+        }, { passive: false });
+
+        // Iniciamos el juego cuando la página esté lista
+        document.addEventListener("DOMContentLoaded", newGame);
+
+        function newGame() {
+            messageElement.innerText = '';
+            const numbersToRemove = parseInt(difficultySelect.value);
+            const baseBoard = generateBaseBoard();
+            solution = JSON.parse(JSON.stringify(baseBoard));
+            puzzle = removeNumbers(baseBoard, numbersToRemove);
+            renderBoard(puzzle);
+        }
+
+        function renderBoard(board) {
+            boardElement.innerHTML = ''; // Limpiamos el mensaje de "Cargando..."
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number'; 
+                    input.pattern = "[0-9]*"; 
+                    input.inputMode = "numeric"; 
+                    input.dataset.row = i;
+                    input.dataset.col = j;
+
+                    if (j === 2 || j === 5) input.classList.add('b-right-thick');
+                    if (j === 8) input.classList.add('no-right-border');
+                    if (i === 2 || i === 5) input.classList.add('b-bottom-thick');
+                    if (i === 8) input.classList.add('no-bottom-border');
+
+                    if (board[i][j] !== 0) {
+                        input.value = board[i][j];
+                        input.readOnly = true;
+                        input.classList.add('fixed');
+                        input.tabIndex = -1; 
+                    } else {
+                        input.value = '';
+                        input.addEventListener('input', (e) => {
+                            if (e.target.value.length > 1) e.target.value = e.target.value.slice(-1);
+                            const numVal = parseInt(e.target.value);
