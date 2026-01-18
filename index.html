@@ -33,7 +33,7 @@
             --btn-color: #3498db;
             --error-color: #e74c3c;
             --success-color: #2ecc71;
-            --info-color: #f39c12; /* Color naranja para avisos intermedios */
+            --info-color: #f39c12;
         }
 
         body {
@@ -142,8 +142,20 @@
         .completed-number { background-color: var(--highlight-completed) !important; }
         .wrong { background-color: #fadbd8 !important; color: var(--error-color); }
 
+        /* ESTILO DE LA FIRMA */
+        .signature {
+            width: 90vw;
+            max-width: 400px;
+            text-align: right;
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-top: 3px; /* Muy pegado al borde */
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
         #message {
-            margin-top: 25px; height: 25px; font-size: 17px;
+            margin-top: 20px; height: 25px; font-size: 17px;
             font-weight: 600; text-align: center; color: #7f8c8d;
         }
     </style>
@@ -166,6 +178,8 @@
     <div id="sudoku-container">
         <div id="sudoku-board">Iniciando...</div>
     </div>
+    
+    <div class="signature">powered by @aljupa</div>
     
     <div id="message"></div>
 
@@ -255,7 +269,7 @@
             }
         });
 
-        // --- LÓGICA DE VERIFICACIÓN MEJORADA ---
+        // --- LÓGICA DE VERIFICACIÓN ---
         function checkSolution() {
             clearHighlights();
             const inputs = document.querySelectorAll('input');
@@ -268,30 +282,24 @@
                 const col = input.dataset.col;
                 const val = parseInt(input.value);
 
-                // Limpiamos errores previos
                 input.classList.remove('wrong');
 
                 if (val) {
-                    // Si la celda tiene un número, lo comprobamos
                     filledCount++;
                     if (val !== solution[row][col]) {
                         input.classList.add('wrong');
-                        isCorrect = false; // ¡Hay un error!
+                        isCorrect = false;
                     }
                 } else {
-                    // Si está vacía
                     isComplete = false;
                 }
             });
 
-            // Lógica de mensajes priorizada
             if (!isCorrect) {
-                // PRIORIDAD 1: Si hay algo mal puesto, avisa (aunque falten números)
                 messageElement.style.color = 'var(--error-color)';
                 messageElement.innerText = 'Hay errores (marcados en rojo).';
             } 
             else if (isCorrect && !isComplete) {
-                // PRIORIDAD 2: No hay errores, pero faltan números
                 messageElement.style.color = 'var(--info-color)';
                 if (filledCount === 0) {
                      messageElement.innerText = '';
@@ -300,7 +308,6 @@
                 }
             } 
             else {
-                // PRIORIDAD 3: No hay errores y está completo
                 messageElement.style.color = 'var(--success-color)';
                 messageElement.innerText = '¡Felicidades! Completado.';
             }
