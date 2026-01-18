@@ -12,10 +12,9 @@
     <title>Sudoku</title>
     
     <style>
-        /* 1. RESETEO TOTAL: Para que los bordes no sumen ancho extra */
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* Quita el flash gris al tocar en iOS */
+            -webkit-tap-highlight-color: transparent;
         }
 
         :root {
@@ -24,7 +23,7 @@
             --grid-line-thin: #bdc3c7;    
             --grid-line-thick: #2c3e50;
             --cell-bg: #ffffff;
-            --fixed-bg: #eaeff1; /* Un gris más suave y limpio */
+            --fixed-bg: #eaeff1;
             
             --highlight-focus: #e8f6fd;
             --highlight-same: #fff9c4;
@@ -34,26 +33,21 @@
             --btn-color: #3498db;
             --error-color: #e74c3c;
             --success-color: #2ecc71;
+            --info-color: #f39c12; /* Color naranja para avisos intermedios */
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            
-            /* CENTRADO PERFECTO Y BLOQUEO DE SCROLL */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            
-            /* Usamos 100dvh para adaptarse a las barras de Safari iOS */
             height: 100dvh; 
             width: 100vw;
             margin: 0;
-            overflow: hidden; /* Adiós barra de scroll */
-            
-            /* Ajuste para móviles con "Notch" */
+            overflow: hidden;
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
             padding-left: 20px;
@@ -67,7 +61,6 @@
             letter-spacing: -1px;
         }
 
-        /* CONTROLES */
         .controls {
             margin-bottom: 25px;
             display: flex;
@@ -79,7 +72,7 @@
         }
 
         select, button {
-            height: 44px; /* Altura cómoda para el dedo */
+            height: 44px;
             border-radius: 12px;
             border: none;
             font-size: 16px;
@@ -106,9 +99,7 @@
         button:active { transform: scale(0.96); }
         button.secondary { background-color: #95a5a6; }
 
-        /* TABLERO - NUEVA LÓGICA DE BORDES */
         #sudoku-container {
-            /* El contenedor dibuja el borde exterior grueso */
             background-color: var(--board-border);
             padding: 4px; 
             border-radius: 6px;
@@ -119,80 +110,41 @@
             display: grid;
             grid-template-columns: repeat(9, 1fr);
             grid-template-rows: repeat(9, 1fr);
-            
-            /* TRUCO MAESTRO: El fondo es el color de la línea fina */
             background-color: var(--grid-line-thin);
-            gap: 1px; /* El hueco de 1px deja ver el fondo (la línea) */
-            
+            gap: 1px;
             width: 90vw;
             height: 90vw;
             max-width: 400px;
             max-height: 400px;
-            
-            /* Asegura que el tablero sea perfectamente cuadrado */
             aspect-ratio: 1 / 1;
         }
 
         input {
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            font-size: 24px;
-            outline: none;
-            color: var(--text-color);
-            background-color: var(--cell-bg); /* Cada celda tiene su fondo blanco */
-            padding: 0;
-            margin: 0;
-            border: none; /* Quitamos bordes individuales */
-            border-radius: 0;
-            -webkit-appearance: none;
-            font-family: inherit;
+            width: 100%; height: 100%; text-align: center;
+            font-size: 24px; outline: none;
+            color: var(--text-color); background-color: var(--cell-bg);
+            padding: 0; margin: 0; border: none; border-radius: 0;
+            -webkit-appearance: none; font-family: inherit;
         }
 
-        /* LÍNEAS GRUESAS INTERNAS (Usando márgenes en las celdas específicas) */
-        
-        /* Línea vertical gruesa a la derecha de la columna 3 y 6 */
-        input:nth-child(3n) {
-            margin-right: 2px; /* Empuja la siguiente celda, revelando el fondo negro del contenedor? No. */
-        }
-        /* Mejor estrategia para líneas gruesas: Shadows o bordes específicos que pisen el gap */
-        
-        /* ESTRATEGIA DEFINITIVA PARA LÍNEAS: */
-        /* Usamos bordes a la derecha y abajo en las celdas específicas */
-        input:nth-child(3n) {
-            border-right: 2px solid var(--grid-line-thick);
-        }
-        /* Corregir el borde derecho de la última columna */
-        input:nth-child(9n) {
-            border-right: none;
-        }
-
-        /* Líneas horizontales gruesas */
-        /* Filas 3 (celdas 19-27) y 6 (celdas 46-54) */
+        /* Líneas gruesas */
+        input:nth-child(3n) { border-right: 2px solid var(--grid-line-thick); }
+        input:nth-child(9n) { border-right: none; }
         input:nth-child(n+19):nth-child(-n+27),
         input:nth-child(n+46):nth-child(-n+54) {
             border-bottom: 2px solid var(--grid-line-thick);
         }
 
-        /* ESTADOS DE LAS CELDAS */
-        .fixed { 
-            background-color: var(--fixed-bg) !important; 
-            font-weight: 700; 
-            color: #2c3e50;
-        }
-        
+        /* Estados */
+        .fixed { background-color: var(--fixed-bg) !important; font-weight: 700; color: #2c3e50; }
         input:focus { background-color: var(--highlight-focus) !important; }
         .same-number { background-color: var(--highlight-same) !important; }
         .completed-number { background-color: var(--highlight-completed) !important; }
         .wrong { background-color: #fadbd8 !important; color: var(--error-color); }
 
         #message {
-            margin-top: 25px;
-            height: 25px;
-            font-size: 17px;
-            font-weight: 600;
-            text-align: center;
-            color: #7f8c8d;
+            margin-top: 25px; height: 25px; font-size: 17px;
+            font-weight: 600; text-align: center; color: #7f8c8d;
         }
     </style>
 </head>
@@ -225,7 +177,6 @@
         let solution = [];
         let puzzle = [];
 
-        // Prevenir doble tap zoom
         document.addEventListener('dblclick', function(event) {
             event.preventDefault();
         }, { passive: false });
@@ -243,18 +194,11 @@
 
         function renderBoard(board) {
             boardElement.innerHTML = '';
-            
             for (let i = 0; i < 9; i++) {
                 for (let j = 0; j < 9; j++) {
                     const input = document.createElement('input');
-                    input.type = 'number'; 
-                    input.pattern = "[0-9]*"; 
-                    input.inputMode = "numeric"; 
-                    input.dataset.row = i;
-                    input.dataset.col = j;
-
-                    // NOTA: Ya no añadimos clases de borde aquí.
-                    // El CSS se encarga de los bordes gruesos usando nth-child.
+                    input.type = 'number'; input.pattern = "[0-9]*"; input.inputMode = "numeric"; 
+                    input.dataset.row = i; input.dataset.col = j;
                     
                     if (board[i][j] !== 0) {
                         input.value = board[i][j];
@@ -271,11 +215,8 @@
                             handleCellFocus(e);
                         });
                     }
-                    
                     input.addEventListener('focus', handleCellFocus);
-                    // Mejora táctil para iOS
                     input.addEventListener('touchstart', (e) => { e.stopPropagation(); }, {passive: true});
-
                     boardElement.appendChild(input);
                 }
             }
@@ -307,7 +248,6 @@
             });
         }
 
-        // Tocar fuera cierra teclado y quita foco
         document.addEventListener('touchstart', function(e) {
             if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'BUTTON') {
                 if(document.activeElement) document.activeElement.blur();
@@ -315,34 +255,54 @@
             }
         });
 
+        // --- LÓGICA DE VERIFICACIÓN MEJORADA ---
         function checkSolution() {
             clearHighlights();
             const inputs = document.querySelectorAll('input');
             let isCorrect = true;
             let isComplete = true;
+            let filledCount = 0;
 
             inputs.forEach(input => {
                 const row = input.dataset.row;
                 const col = input.dataset.col;
                 const val = parseInt(input.value);
+
+                // Limpiamos errores previos
                 input.classList.remove('wrong');
 
-                if (!val) { isComplete = false; return; }
-                if (val !== solution[row][col]) {
-                    input.classList.add('wrong');
-                    isCorrect = false;
+                if (val) {
+                    // Si la celda tiene un número, lo comprobamos
+                    filledCount++;
+                    if (val !== solution[row][col]) {
+                        input.classList.add('wrong');
+                        isCorrect = false; // ¡Hay un error!
+                    }
+                } else {
+                    // Si está vacía
+                    isComplete = false;
                 }
             });
 
-            if (isCorrect && isComplete) {
+            // Lógica de mensajes priorizada
+            if (!isCorrect) {
+                // PRIORIDAD 1: Si hay algo mal puesto, avisa (aunque falten números)
+                messageElement.style.color = 'var(--error-color)';
+                messageElement.innerText = 'Hay errores (marcados en rojo).';
+            } 
+            else if (isCorrect && !isComplete) {
+                // PRIORIDAD 2: No hay errores, pero faltan números
+                messageElement.style.color = 'var(--info-color)';
+                if (filledCount === 0) {
+                     messageElement.innerText = '';
+                } else {
+                     messageElement.innerText = 'Vas bien. Todo correcto por ahora.';
+                }
+            } 
+            else {
+                // PRIORIDAD 3: No hay errores y está completo
                 messageElement.style.color = 'var(--success-color)';
                 messageElement.innerText = '¡Felicidades! Completado.';
-            } else if (!isComplete) {
-                messageElement.style.color = '#e67e22';
-                messageElement.innerText = 'Faltan números.';
-            } else {
-                messageElement.style.color = 'var(--error-color)';
-                messageElement.innerText = 'Hay errores.';
             }
         }
 
@@ -357,7 +317,6 @@
             });
         }
 
-        // --- Lógica Sudoku ---
         function generateBaseBoard() {
             let board = Array.from({ length: 9 }, () => Array(9).fill(0));
             fillBox(board, 0, 0); fillBox(board, 3, 3); fillBox(board, 6, 6);
