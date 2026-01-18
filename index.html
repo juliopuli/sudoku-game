@@ -31,6 +31,7 @@
             
             --text-color: #2c3e50;
             --btn-color: #3498db;
+            --btn-text: #ffffff;
             --error-color: #e74c3c;
             --success-color: #2ecc71;
             --info-color: #f39c12;
@@ -43,8 +44,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100dvh; 
+            justify-content: center; /* Centrado vertical */
+            min-height: 100dvh; 
             width: 100vw;
             margin: 0;
             overflow: hidden;
@@ -55,55 +56,20 @@
         }
 
         h1 {
-            margin: 0 0 20px 0;
-            font-size: 32px;
+            margin: 0 0 15px 0; /* Menos margen para subir el tablero */
+            font-size: 36px;
             font-weight: 800;
             letter-spacing: -1px;
-        }
-
-        .controls {
-            margin-bottom: 25px;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        select, button {
-            height: 44px;
-            border-radius: 12px;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        select {
-            padding: 0 15px;
-            background-color: white;
             color: var(--text-color);
-            border: 1px solid #dfe6e9;
-            -webkit-appearance: none;
-            text-align: center;
         }
 
-        button {
-            padding: 0 16px;
-            background-color: var(--btn-color);
-            color: white;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        button:active { transform: scale(0.96); }
-        button.secondary { background-color: #95a5a6; }
-
+        /* CONTENEDOR DEL TABLERO */
         #sudoku-container {
             background-color: var(--board-border);
             padding: 4px; 
-            border-radius: 6px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 5px; /* Espacio para la firma */
         }
 
         #sudoku-board {
@@ -117,6 +83,8 @@
             max-width: 400px;
             max-height: 400px;
             aspect-ratio: 1 / 1;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         input {
@@ -142,21 +110,79 @@
         .completed-number { background-color: var(--highlight-completed) !important; }
         .wrong { background-color: #fadbd8 !important; color: var(--error-color); }
 
-        /* ESTILO DE LA FIRMA */
+        /* FIRMA */
         .signature {
             width: 90vw;
             max-width: 400px;
             text-align: right;
             font-size: 11px;
-            color: #7f8c8d;
-            margin-top: 3px; /* Muy pegado al borde */
+            color: #95a5a6;
+            margin-bottom: 20px; /* Separación con los botones */
             font-weight: 500;
-            opacity: 0.8;
         }
 
+        /* CONTROLES (Ahora debajo) */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 columnas iguales */
+            gap: 12px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 10px;
+        }
+
+        /* Estilo unificado para botones y select */
+        select, button {
+            height: 50px; /* Botones más altos y cómodos */
+            border-radius: 14px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        /* Selector de dificultad */
+        select {
+            padding: 0 15px;
+            background-color: white;
+            color: var(--text-color);
+            -webkit-appearance: none;
+            text-align-last: center; /* Centra el texto en iOS */
+        }
+
+        /* Botón Nuevo Juego */
+        .btn-new {
+            background-color: var(--btn-color);
+            color: white;
+        }
+
+        /* Botón Verificar */
+        .btn-check {
+            background-color: white;
+            color: var(--btn-color);
+            border: 2px solid var(--btn-color); /* Borde de color para diferenciar */
+            box-shadow: none;
+        }
+
+        /* Botón Resolver */
+        .btn-solve {
+            background-color: #e0e0e0;
+            color: #7f8c8d;
+        }
+
+        button:active { transform: scale(0.96); opacity: 0.9; }
+
         #message {
-            margin-top: 20px; height: 25px; font-size: 17px;
-            font-weight: 600; text-align: center; color: #7f8c8d;
+            height: 25px; 
+            font-size: 16px;
+            font-weight: 600; 
+            text-align: center; 
+            color: #7f8c8d;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -164,22 +190,22 @@
 
     <h1>Sudoku</h1>
 
+    <div id="sudoku-container">
+        <div id="sudoku-board">Iniciando...</div>
+    </div>
+    
+    <div class="signature">powered by @aljupa</div>
+
     <div class="controls">
         <select id="difficulty">
             <option value="30">Fácil</option>
             <option value="40" selected>Medio</option>
             <option value="52">Difícil</option>
         </select>
-        <button onclick="newGame()">Nuevo</button>
-        <button class="secondary" onclick="checkSolution()">Verificar</button>
-        <button class="secondary" onclick="solveGame()">Resolver</button>
+        <button class="btn-new" onclick="newGame()">Nuevo Juego</button>
+        <button class="btn-check" onclick="checkSolution()">Verificar</button>
+        <button class="btn-solve" onclick="solveGame()">Rendirse</button>
     </div>
-
-    <div id="sudoku-container">
-        <div id="sudoku-board">Iniciando...</div>
-    </div>
-    
-    <div class="signature">powered by @aljupa</div>
     
     <div id="message"></div>
 
@@ -269,7 +295,6 @@
             }
         });
 
-        // --- LÓGICA DE VERIFICACIÓN ---
         function checkSolution() {
             clearHighlights();
             const inputs = document.querySelectorAll('input');
@@ -281,7 +306,6 @@
                 const row = input.dataset.row;
                 const col = input.dataset.col;
                 const val = parseInt(input.value);
-
                 input.classList.remove('wrong');
 
                 if (val) {
@@ -304,7 +328,7 @@
                 if (filledCount === 0) {
                      messageElement.innerText = '';
                 } else {
-                     messageElement.innerText = 'Vas bien. Todo correcto por ahora.';
+                     messageElement.innerText = 'Vas bien.';
                 }
             } 
             else {
